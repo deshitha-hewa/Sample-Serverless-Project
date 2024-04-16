@@ -1,55 +1,74 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
-import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 
 import schema, { createCourseSchema } from './schema';
 import { createCourseService, deleteCourseByIdService, findCourseByIdService, getAllCoursesService, updateCourseByIdService } from './course.service';
+import { errorHandler, responseHandler } from '@libs/response';
+import { StatusCodes } from '@libs/enum';
 
 const getAllCoursesHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async () => {
-  const courses = await getAllCoursesService()
-  return formatJSONResponse({
-    message: `Get all course`,
-    data: courses
-  });
+  try {
+    const courses = await getAllCoursesService();
+
+    return responseHandler(StatusCodes.Success, courses);
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorHandler(error);
+    }
+    throw error;
+  }
 };
 
 const findCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
   console.log(event.pathParameters.id)
-  const course = await findCourseByIdService(event.pathParameters.id)
-  if (course) {
-    return formatJSONResponse({
-      message: `Successfully created a course`,
-      data: course
-    });
+  try {
+    const course = await findCourseByIdService(event.pathParameters.id);
+
+    return responseHandler(StatusCodes.Success, course);
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorHandler(error);
+    }
+    throw error;
   }
 };
 
 const createCourseHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCourseSchema> = async (event) => {
-  const course = await createCourseService(event.body)
-  if (course) {
-    return formatJSONResponse({
-      message: `Successfully created a course`,
-      data: course
-    });
+  try {
+    const course = await createCourseService(event.body);
+
+    return responseHandler(StatusCodes.Success, course);
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorHandler(error);
+    }
+    throw error;
   }
 };
 
 const deleteCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCourseSchema> = async (event) => {
-  const course = await deleteCourseByIdService(event.pathParameters.id)
-  if (course) {
-    return formatJSONResponse({
-      message: `${event.pathParameters.id} Successfully deleted a course`
-    });
+  try {
+    const course = await deleteCourseByIdService(event.pathParameters.id);
+
+    return responseHandler(StatusCodes.Success, { course });
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorHandler(error);
+    }
+    throw error;
   }
 };
 
 const updateCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCourseSchema> = async (event) => {
-  const course = await updateCourseByIdService(event.body)
-  if (course) {
-    return formatJSONResponse({
-      message: `Successfully updated a course`,
-      data: course
-    });
+  try {
+    const course = await updateCourseByIdService(event.body);
+
+    return responseHandler(StatusCodes.Success, { course });
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorHandler(error);
+    }
+    throw error;
   }
 };
 

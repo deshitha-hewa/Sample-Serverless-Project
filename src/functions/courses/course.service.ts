@@ -1,8 +1,10 @@
 import CourseDataSource from "@libs/db-connection";
 import { Course } from "./entities/course.entity";
+import { wrapServiceError } from "@libs/response";
+import AppValidation from "@libs/api-validation";
+import { StatusCodes } from "@libs/enum";
 
 export const getAllCoursesService = async () => {
-
   try {
     const connection = await CourseDataSource.getInitializedInstance();
     const courseRepository = connection.getRepository(Course);
@@ -10,7 +12,9 @@ export const getAllCoursesService = async () => {
     return courses;
   } catch (error) {
     console.error('Failed to fetch courses - Internal error', error);
-    throw error;
+    if (error instanceof Error) {
+      wrapServiceError(error, 'Failed to fetch courses - Internal error');
+    }
   } finally {
     await CourseDataSource.closeConnection();
   }
@@ -24,7 +28,9 @@ export const findCourseByIdService = async (id) => {
     return course ? course : null;
   } catch (error) {
     console.error('Failed to fetch course - Internal error', error);
-    throw error;
+    if (error instanceof Error) {
+      wrapServiceError(error, 'Failed to fetch course - Internal error');
+    }
   } finally {
     await CourseDataSource.closeConnection();
   }
@@ -38,7 +44,9 @@ export const createCourseService = async (course) => {
     return newCourse;
   } catch (error) {
     console.error('Failed to create course - Internal error', error);
-    throw error;
+    if (error instanceof Error) {
+      wrapServiceError(error, 'Failed to create course - Internal error');
+    }
   } finally {
     await CourseDataSource.closeConnection();
   }
@@ -48,11 +56,17 @@ export const deleteCourseByIdService = async (courseIdToDelete) => {
   try {
     const connection = await CourseDataSource.getInitializedInstance();
     const courseRepository = connection.getRepository(Course);
+    let course = await courseRepository.findOneBy({ courseId: courseIdToDelete });
+    if (!course) {
+      throw new AppValidation('Invalid course id', StatusCodes.NotFound);
+    }
     const deletedCourse = await courseRepository.delete(courseIdToDelete);
-    return deletedCourse.affected === 1 ? deletedCourse : null;
+    return deletedCourse.affected === 1 ? "Successfully deleted" : "Not deleted";
   } catch (error) {
     console.error('Failed to delete course - Internal error', error);
-    throw error;
+    if (error instanceof Error) {
+      wrapServiceError(error, 'Failed to delete course - Internal error');
+    }
   } finally {
     await CourseDataSource.closeConnection();
   }
@@ -63,18 +77,17 @@ export const updateCourseByIdService = async (courseToUpdate) => {
     const connection = await CourseDataSource.getInitializedInstance();
     const courseRepository = connection.getRepository(Course);
     let course = await courseRepository.findOneBy({ courseId: courseToUpdate.courseId });
-    if(!course){
-      throw Error('Course not found')
+    if (!course) {
+      throw new AppValidation('Invalid course id', StatusCodes.NotFound);
     }
-    const isCourseUpdated = await courseRepository.update(courseToUpdate.courseId,courseToUpdate);
-    if(isCourseUpdated.affected === 1){
-      course = await courseRepository.findOneBy({ courseId: courseToUpdate.courseId });
+    const updatedCourse = await courseRepository.update(courseToUpdate.courseId, courseToUpdate);
 
-    }
-    return course ? course : null;
+    return updatedCourse.affected === 1 ? 'Successfully updated' : 'Not Edited';
   } catch (error) {
     console.error('Failed to update course - Internal error', error);
-    throw error;
+    if (error instanceof Error) {
+      wrapServiceError(error, 'Failed to update course - Internal error');
+    }
   } finally {
     await CourseDataSource.closeConnection();
   }
