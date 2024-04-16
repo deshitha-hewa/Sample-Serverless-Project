@@ -1,13 +1,18 @@
 import { handlerPath } from '@libs/handler-resolver';
-import { createCourseSchema, updateCourseSchema } from './schema';
+import { createCourseSchema, deleteCourseByIdSchema, getAllCoursesSchema, getCourseByIdSchema, updateCourseSchema } from './schema';
 
 export const getAllCourses = {
   handler: `${handlerPath(__dirname)}/handler.getAllCourses`,
   events: [
     {
       http: {
-        method: 'GET',
-        path: 'courses'
+        method: 'POST',
+        path: 'courses',
+        request: {
+          schemas: {
+            'application/json': getAllCoursesSchema
+          }
+        }
       }
     }
   ]
@@ -19,7 +24,7 @@ export const createCourse = {
     {
       http: {
         method: 'POST',
-        path: 'courses',
+        path: 'course/create',
         request: {
           schemas: {
             'application/json': createCourseSchema
@@ -35,8 +40,13 @@ export const findCourseById = {
   events: [
     {
       http: {
-        method: 'GET',
-        path: 'courses/{id}'
+        method: 'POST',
+        path: 'course',
+        request: {
+          schemas: {
+            'application/json': getCourseByIdSchema
+          }
+        }
       }
     }
   ]
@@ -48,7 +58,12 @@ export const deleteCourseById = {
     {
       http: {
         method: 'DELETE',
-        path: 'courses/{id}'
+        path: 'course/delete',
+        request: {
+          schemas: {
+            'application/json': deleteCourseByIdSchema
+          }
+        }
       }
     }
   ]

@@ -6,3 +6,8 @@ export enum StatusCodes {
   NotFound = 404,
   InternalServerError = 500
 }
+
+export enum BodyDefaults {
+  Skip = 0,
+  Take = 25
+}

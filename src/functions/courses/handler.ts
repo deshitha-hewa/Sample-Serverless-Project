@@ -1,14 +1,20 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 
-import schema, { createCourseSchema } from './schema';
+import { createCourseSchema, deleteCourseByIdSchema, getAllCoursesSchema, getCourseByIdSchema, updateCourseSchema } from './schema';
 import { createCourseService, deleteCourseByIdService, findCourseByIdService, getAllCoursesService, updateCourseByIdService } from './course.service';
 import { errorHandler, responseHandler } from '@libs/response';
 import { StatusCodes } from '@libs/enum';
 
-const getAllCoursesHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async () => {
+const getAllCoursesHandler: ValidatedEventAPIGatewayProxyEvent<typeof getAllCoursesSchema> = async (event) => {
   try {
-    const courses = await getAllCoursesService();
+    const courses = await getAllCoursesService(
+      event.body as {
+        skip: number;
+        take: number;
+        searchKeyword?: string;
+        sortColumn?: string;
+      });
 
     return responseHandler(StatusCodes.Success, courses);
   } catch (error) {
@@ -19,10 +25,9 @@ const getAllCoursesHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = 
   }
 };
 
-const findCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
-  console.log(event.pathParameters.id)
+const findCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof getCourseByIdSchema> = async (event) => {
   try {
-    const course = await findCourseByIdService(event.pathParameters.id);
+    const course = await findCourseByIdService(event.body);
 
     return responseHandler(StatusCodes.Success, course);
   } catch (error) {
@@ -46,9 +51,9 @@ const createCourseHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCours
   }
 };
 
-const deleteCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCourseSchema> = async (event) => {
+const deleteCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof deleteCourseByIdSchema> = async (event) => {
   try {
-    const course = await deleteCourseByIdService(event.pathParameters.id);
+    const course = await deleteCourseByIdService(event.body);
 
     return responseHandler(StatusCodes.Success, { course });
   } catch (error) {
@@ -59,7 +64,7 @@ const deleteCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof createC
   }
 };
 
-const updateCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof createCourseSchema> = async (event) => {
+const updateCourseByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof updateCourseSchema> = async (event) => {
   try {
     const course = await updateCourseByIdService(event.body);
 
