@@ -1,1 +1,9 @@
-export { default as hello } from './hello';
+import { createCourse, deleteCourseById, findCourseById, getAllCourses, updateCourseById } from "./courses";
+
+export default {
+  getAllCourses,
+  createCourse,
+  findCourseById,
+  deleteCourseById,
+  updateCourseById
+};
